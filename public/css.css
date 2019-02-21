@@ -1,0 +1,6 @@
+.postfield { width: 300px; height: 200px; border: 1px solid #999999; padding: 5px; }
+
+article {
+    border:1px solid black;
+    max-width: 50%;
+}
