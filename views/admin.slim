@@ -1,5 +1,4 @@
-
-h1 admin page
+h1 Create Post
 
 form action="/create_post" method="post"
         input type="text" name="title" placeholder="title"
@@ -8,3 +7,17 @@ form action="/create_post" method="post"
         br
         input type="submit" value="create"
         br
+
+h2 My Posts
+
+- posts.each do |post|
+        article
+                p = post["title"]
+                form action="/delete_post" method="post"
+                        input type="hidden" name="post_id" value="#{post["post_id"]}"
+                        input type="submit" value="delete"
+                br        
+                form action="/edit_post/#{post["post_id"]}" method="get"
+                        input type="hidden" name="title" value="#{post["title"]}"
+                        input type="hidden" name="post_id" value="#{post["post_id"]}"
+                        input type="submit" value="edit"

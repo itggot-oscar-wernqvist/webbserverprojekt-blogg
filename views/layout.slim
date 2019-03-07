@@ -12,13 +12,13 @@ html lang="en"
             header 
                 h1 
                     a href="/" Le Blog
-            a href="/register" register
-            br
             - if session[:logged_in] == true
                 p logged in as #{session[:username]}
                 a href="/admin"  admin
                 p   
                 a href="/logout" logout
             - else
+                a href="/register" register
+                br
                 a href="/login" login
             == yield

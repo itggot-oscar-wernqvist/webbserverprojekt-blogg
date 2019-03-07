@@ -7,8 +7,7 @@ enable :sessions
 get('/') do
     db = SQLite3::Database.new("db/blog.db")
     db.results_as_hash = true
-    result = db.execute("SELECT posts.post_id, posts.title, posts.content, posts.timestamp, users.username FROM posts INNER JOIN users ON users.user_id = posts.user_id")
-    p result
+    result = db.execute("SELECT posts.post_id, posts.title, posts.content, posts.timestamp, posts.user_id, users.username FROM posts INNER JOIN users ON users.user_id = posts.user_id").reverse
     slim(:index, locals:{
         posts: result
     })
@@ -53,10 +52,25 @@ end
 
 get('/admin') do
     if session[:logged_in] == true
-        slim(:admin)
+        db = SQLite3::Database.new("db/blog.db")
+        db.results_as_hash = true
+        result = db.execute("SELECT posts.post_id, posts.title FROM posts WHERE posts.user_id = ?", session[:user_id])
+        p result
+        slim(:admin, locals:{
+            posts: result
+        })
     else
         redirect('/login')
     end
+end
+
+get('/user/:id') do
+    db = SQLite3::Database.new("db/blog.db")
+    db.results_as_hash = true
+    result = db.execute("SELECT posts.post_id, posts.title, posts.content, posts.timestamp, posts.user_id, users.username FROM posts INNER JOIN users ON users.user_id = posts.user_id WHERE users.user_id = ?", params["id"])
+    slim(:user, locals:{
+        posts: result
+    })
 end
 
 post('/create_post') do
@@ -64,5 +78,30 @@ post('/create_post') do
     time = Time.now.asctime
     p time
     db.execute("INSERT INTO posts (title, content, user_id, timestamp) VALUES (?,?,?,?)", params["title"], params["content"], session[:user_id], time)
+    redirect('/')
+end
+
+post('/delete_post') do
+    p params["post_id"]
+    db = SQLite3::Database.new("db/blog.db")
+    db.execute("DELETE FROM posts WHERE post_id = ?", params["post_id"])
+    redirect('/')
+end
+
+get('/edit_post/:id') do
+    db = SQLite3::Database.new("db/blog.db")
+    post_creator = db.execute("SELECT posts.user_id FROM posts WHERE posts.post_id = ?", params["id"])
+    p post_creator
+    p session[:user_id]
+    if session[:user_id] == post_creator
+        slim(:edit_post)
+    else
+        redirect('/login')
+    end
+end
+
+post('/edit_post_attempt') do
+    db = SQLite3::Database.new("db/blog.db")
+    db.execute("UPDATE posts SET title = ?, content = ? WHERE post_id = ?", params["title"], params["content"], params["post_id"])
     redirect('/')
 end
