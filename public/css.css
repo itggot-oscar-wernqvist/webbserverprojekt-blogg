@@ -4,3 +4,7 @@ article {
     border:1px solid black;
     max-width: 50%;
 }
+
+main {
+    font-family: sans-serif;
+}

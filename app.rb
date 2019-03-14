@@ -21,8 +21,6 @@ post('/login_attempt') do
     db = SQLite3::Database.new("db/blog.db")
     password_hash = db.execute("SELECT users.password_hash FROM users WHERE users.username = ?", params["username"])
     user_id = db.execute("SELECT users.user_id FROM users WHERE users.username = ?", params["username"]) 
-    p password_hash
-    p params["password"]
     if password_hash.length > 0 && BCrypt::Password.new(password_hash[0][0]).==(params["password"])
         session[:logged_in] = true
         session[:username] = params["username"]
@@ -33,7 +31,6 @@ post('/login_attempt') do
         redirect('/login')
     end    
 end
-
 
 get('/logout') do
     session.clear
@@ -55,7 +52,6 @@ get('/admin') do
         db = SQLite3::Database.new("db/blog.db")
         db.results_as_hash = true
         result = db.execute("SELECT posts.post_id, posts.title FROM posts WHERE posts.user_id = ?", session[:user_id])
-        p result
         slim(:admin, locals:{
             posts: result
         })
@@ -76,13 +72,11 @@ end
 post('/create_post') do
     db = SQLite3::Database.new("db/blog.db")
     time = Time.now.asctime
-    p time
     db.execute("INSERT INTO posts (title, content, user_id, timestamp) VALUES (?,?,?,?)", params["title"], params["content"], session[:user_id], time)
     redirect('/')
 end
 
 post('/delete_post') do
-    p params["post_id"]
     db = SQLite3::Database.new("db/blog.db")
     db.execute("DELETE FROM posts WHERE post_id = ?", params["post_id"])
     redirect('/')
@@ -91,8 +85,6 @@ end
 get('/edit_post/:id') do
     db = SQLite3::Database.new("db/blog.db")
     post_creator = db.execute("SELECT posts.user_id FROM posts WHERE posts.post_id = ?", params["id"])
-    p post_creator
-    p session[:user_id]
     if session[:user_id] == post_creator
         slim(:edit_post)
     else
